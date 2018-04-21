@@ -9,6 +9,7 @@ import org.xml.sax.SAXException;
 
 public class Parser {
     private String htmlFolderPath = "/";
+    private int totalNumFiles = 0;
 
     public Parser(String path) {
         htmlFolderPath = path;
@@ -16,8 +17,12 @@ public class Parser {
 
     public void parseAll() throws IOException, TikaException, SAXException {
         File folder = new File(htmlFolderPath);
-        for (File file : folder.listFiles()) {
+        File[] files = folder.listFiles();
+        totalNumFiles = files.length;
+        int fileCounter = 0;
+        for (File file : files) {
             parseContent(file);
+            System.out.println(String.format("Parsed: %d, Total: %d", ++fileCounter, totalNumFiles));
         }
     }
 
@@ -31,9 +36,10 @@ public class Parser {
         //Html parser
         HtmlParser htmlparser = new HtmlParser();
         htmlparser.parse(inputstream, handler, metadata, pcontext);
-        System.out.println("Contents of the document:" + handler.toString());
-        BufferedWriter writer = new BufferedWriter(new FileWriter("big.txt"));
-        writer.write(handler.toString().trim());
+        BufferedWriter writer = new BufferedWriter(new FileWriter("big.txt", true));
+        String rawContent = handler.toString();
+        rawContent = rawContent.replaceAll("\\s+", " ");
+        writer.write(rawContent);
         writer.flush();
         writer.close();
     }
